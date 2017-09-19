@@ -65,25 +65,9 @@ def notes(abbr):
 			return 'added'
 		else:
 			#insert note into teams notes
-			#teamDoc = teamsCol.find_one({"abbr": abbr})
 			teamsCol.update_one({"abbr": abbr}, {"$push": {"notes" :{"$each":[note],"$position":0}}})
 			return 'added'
 
-@app.route('/values/<week>')
-def values():
-	#get games data
-	#with open('games.json') as data_file:
-	#    games = json.load(data_file)
-
-	#weekGames = games[week]
-
-	#get pulled odds, returns list of game dicts
-	#pulledGames = getGamesOdds()
-	#for weekGame in weekGames:
-		#pass
-	#try getting first lines posting of weeks
-	return render_template('values.html')
-#post /<gameId>/
 
 if __name__ == '__main__':
     app.run(debug = True, port=5002)
