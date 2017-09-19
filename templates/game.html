@@ -1,0 +1,221 @@
+<!doctype html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{awayTeam['abbr']}}@{{homeTeam['abbr']}}</title>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+	<link rel="stylesheet" href="/static/css/style.css">
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+	<script>
+	$( function() {
+		$( ".accordion" ).accordion({
+			collapsible: true,
+			active: false
+		});
+	} );
+	</script>
+</head>
+<body>
+	<div>
+		{{awayTeam['team']}}: <input type="text" name="gaway" id="guessAwayScore">
+		<button onclick="setAwayScore()">set</button>
+		{{homeTeam['team']}}: <input type="text" name="ghome" id="guessHomeScore">
+		<button onclick="setHomeScore()">set</button>
+		o/u: <input type="text" name="gou" id="ou">
+		<button onclick="setOu()">set</button>
+		spread: <input type="text" name="gspread" id="spread">
+		<button onclick="setSpread()">set</button>
+
+	</div>
+	<div class='accordion'>
+		<h3>game notes</h3>
+		<div>
+			<input type='text' id='gameNote' class='note'></input>
+			<button id='addNote' onclick='addNote("{{gameDoc["abbrId"]}}")'>add note</button><br>
+			<ul id='gameNotes'>
+				{% for note in gameDoc['notes'] %}
+				<li>{{note}}</li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+	<a href="{{homeTeam['sbnation']}}" target="_blank">sbnation</a> ---
+	<a href="https://www.google.com/#q={{homeTeam['team']}}+{{homeTeam['nickname']}}+practice+notes&tbm=nws&tbs=qdr:w&*" target="_blank">practice notes</a> ---
+
+	<a href="https://www.youtube.com/results?q={{homeTeam['team']}}+{{homeTeam['nickname']}}+game+full" target="_blank">tube games</a> ---
+	<a href="{{homeTeam['espn']}}" target="_blank">espn</a> ---
+	<a href="http://www.espn.com/college-football/team/schedule/_/id/{{homeTeam['espnId']}}" target="_blank">schedule</a> ---
+	<a href="http://www.espn.com/college-football/team/stats/_/id/{{homeTeam['espnId']}}" target="_blank">stats</a> -
+	<a href="https://www.google.com/search?q={{homeTeam['team']}}+{{homeTeam['nickname']}}+football+schedule" target="_blank">team radio</a>
+	<div class="accordion">
+		<h3>{{homeTeam['abbr']}} depth chart</h3>
+		<div>
+			{{homeTeam['depthChart']}}
+		</div>
+	</div>
+	<div class='accordion'>
+		<h3>{{homeTeam['abbr']}} notes</h3>
+		<div>
+			<input type='text' id='{{homeTeam["abbr"]}}Note' class='note'></input>
+			<button id='addNote' onclick='addNote("{{homeTeam["abbr"]}}")'>add note</button><br>
+			<ul id='{{homeTeam["abbr"]}}Notes'>
+				{% for note in homeTeam['notes'] %}
+				<li>{{note}}</li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+	<div id='tweets'>
+		{% for tweet in homeTeam['tweets'][:25] %}
+		{{tweet['tweet']}} | {{tweet['minsAgo']}} {% for url in tweet['urls']%}<a href="{{url}}" target="_blank">url</a>{% endfor %}<br>
+		{% endfor %}
+	</div>
+
+	<br>
+	<br>
+	<br>
+
+	<a href="{{awayTeam['sbnation']}}" target="_blank">sbnation</a> ---
+	<a href="https://www.google.com/#q={{awayTeam['team']}}+{{awayTeam['nickname']}}+practice+notes&tbm=nws&tbs=qdr:w&*" target="_blank">practice notes</a> ---
+	<a href="https://www.youtube.com/results?q={{awayTeam['team']}}+{{awayTeam['nickname']}}+game+full" target="_blank">tube games</a> ---
+	<a href="{{awayTeam['espn']}}" target="_blank">espn</a> ---
+	<a href="http://www.espn.com/college-football/team/schedule/_/id/{{awayTeam['espnId']}}" target="_blank">schedule</a> ---
+	<a href="http://www.espn.com/college-football/team/stats/_/id/{{awayTeam['espnId']}}" target="_blank">stats</a> -
+	<a href="https://www.google.com/search?q={{awayTeam['team']}}+{{awayTeam['nickname']}}+football+schedule" target="_blank">team radio</a>
+	<div class="accordion">
+		<h3>{{awayTeam['abbr']}} depth chart</h3>
+		<div>
+			{{awayTeam['depthChart']}}
+		</div>
+	</div>
+	<div class='accordion'>
+		<h3>{{awayTeam['abbr']}} notes</h3>
+		<div>
+			<input type='text' id='{{awayTeam["abbr"]}}Note' class='note'></input>
+			<button id='addNote' onclick='addNote("{{awayTeam["abbr"]}}")'>add note</button><br>
+			<ul id='{{awayTeam["abbr"]}}Notes'>
+				{% for note in awayTeam['notes'] %}
+				<li>{{note}}</li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+	<div id='tweets'>
+		{% for tweet in awayTeam['tweets'][:25] %}
+		{{tweet['tweet']}} | {{tweet['minsAgo']}} {% for url in tweet['urls']%}<a href="{{url}}" target="_blank">url</a>{% endfor %}<br>
+		{% endfor %}
+	</div>
+</body>
+
+<script type="text/javascript">
+
+var postStr = window.location.pathname;
+var varArr = window.location.pathname.slice(1).split('/');
+var week = varArr[0];
+var abbrId = varArr[1];
+
+function setOu(){
+	var ou = $('#ou').val();
+	$.post(postStr, { guessOu: ou }, function( data ) {
+	  //set new guessOu
+	  if (data == "updated") {
+	  	$('#ou').val(ou);
+	  	alert('updated!');
+	  }
+	  else {
+	  	alert('error');
+	  }
+	});
+}
+
+function setSpread(){
+	var spread = $('#spread').val();
+	$.post(postStr, { guessSpread: spread }, function( data ) {
+	  //set new guessSpread
+	  if (data == "updated") {
+	  	$('#spread').val(spread);
+	  	alert('updated!');
+	  }
+	  else {
+	  	alert('error');
+	  }
+	});
+}
+
+function setHomeScore(){
+	var score = $('#guessHomeScore').val();
+
+	$.post(postStr, { guessScoreHome: score }, function( data ) {
+	  //set new score
+	  if (data == "updated") {
+	  	$('#guessHomeScore').val(score);
+	  	alert('updated!');
+	  }
+	  else {
+	  	alert('error');
+	  }
+	});
+}
+
+function setAwayScore(){
+	var score = $('#guessAwayScore').val();
+
+	$.post(postStr, { guessScoreAway: score }, function( data ) {
+	  //set new score
+	  if (data == "updated") {
+	  	$('#guessAwayScore').val(score);
+	  	alert('updated!');
+	  }
+	  else {
+	  	alert('error');
+	  }
+	});
+}
+
+function addNote(team) {
+	if (team.indexOf('@') !== -1) {
+		var note = $('#gameNote').val();
+		$.post('/notes/'+team, { team: team, note: note }, function( data ) {
+			if (data == 'added') {
+				//clear input tag
+				$('#gameNote').val('');
+				//add note to top
+				$('#gameNotes').prepend('<li>'+note+'</li>');
+			}
+			else {
+				alert('error')
+			}
+		});
+	}
+
+	else {
+		var note = $('#'+team+'Note').val();
+		$.post('/notes/'+team, { team: team, note: note }, function( data ) {
+			if (data == 'added') {
+				//clear input tag
+				$('#'+team+'Note').val('');
+				//add note to top
+				$('#'+team+'Notes').prepend('<li>'+note+'</li>');
+			}
+			else {
+				alert('error')
+			}
+		});
+	}
+
+}
+
+//set guess spread and ou vales
+var guessSpread = "{{gameDoc['guessSpread']}}";
+var guessOu = "{{gameDoc['guessOu']}}";
+var guessScoreAway = "{{gameDoc['guessScoreAway']}}";
+var guessScoreHome = "{{gameDoc['guessScoreHome']}}";
+$('#ou').val(guessOu);
+$('#spread').val(guessSpread);
+$('#guessAwayScore').val(guessScoreAway);
+$('#guessHomeScore').val(guessScoreHome);
+
+</script>
+</html>

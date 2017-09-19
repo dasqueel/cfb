@@ -1,0 +1,15 @@
+input {
+	width: 3em;
+}
+
+#addNote {
+	margin-left: 3em;
+}
+
+.note {
+	width: 35%;
+}
+
+ul {
+	overflow: auto;
+}
